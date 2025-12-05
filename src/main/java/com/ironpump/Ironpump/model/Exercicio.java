@@ -1,5 +1,6 @@
 package com.ironpump.Ironpump.model;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -28,5 +29,6 @@ public class Exercicio {
     private String observacoes;
 
     @OneToMany(mappedBy = "exercicio", cascade = CascadeType.ALL)
+    @JsonIgnore
     private List<TreinoLog> treinos = new ArrayList<>();
 }
