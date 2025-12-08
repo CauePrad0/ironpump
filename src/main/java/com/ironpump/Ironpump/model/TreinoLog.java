@@ -18,7 +18,7 @@ public class TreinoLog {
     private Long id;
 
     @Column(name = "data_treino",nullable = false)
-    private LocalDate dataTreino;
+    private LocalDate data;
 
     @Column(nullable = false)
     private Integer series;

@@ -9,7 +9,7 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
 @RestController
-@RequestMapping("/exercicios")
+@RequestMapping("/api/exercicios")
 public class ExercicioController {
     @Autowired
     private ExercicioRepository repository;
