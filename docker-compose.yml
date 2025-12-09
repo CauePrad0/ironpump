@@ -1,21 +1,20 @@
+version: '3.8'
+
 services:
   postgres:
     image: postgres:15-alpine
     container_name: ironpump-db
-    env_file:
-      - .env
     environment:
-      POSTGRES_USER: ${DB_USER}
-      POSTGRES_PASSWORD: ${DB_PASSWORD}
-      POSTGRES_DB: ${DB_NAME}
+      POSTGRES_DB: ironpump
+      POSTGRES_USER: ironpump_user
+      POSTGRES_PASSWORD: iron_secret_2024
     ports:
-      - "${DB_PORT}:5432"
+      - "5433:5432"
     volumes:
       - postgres_data:/var/lib/postgresql/data
     restart: unless-stopped
     healthcheck:
-      # Changed "postgres" to "${DB_USER}" to ensure healthcheck uses the correct user
-      test: ["CMD-SHELL", "pg_isready -U ${DB_USER}"]
+      test: ["CMD-SHELL", "pg_isready -U ironpump_user -d ironpump"]
       interval: 10s
       timeout: 5s
       retries: 5
