@@ -37,10 +37,6 @@
   - ➡️ **Manutenção:** Carga mantida.
 - **Histórico:** Visualização completa do progresso ao longo do tempo.
 
-### 📱 Interface
-- **Responsiva:** Adaptada para Desktop e Mobile.
-- **Moderna:** Design inspirado em interfaces minimalistas.
-
 ---
 
 ## 🛠️ Tecnologias
@@ -101,40 +97,6 @@ npm run dev
 
 ---
 
-## 🗄️ Modelagem de Dados
-
-```mermaid
-erDiagram
-    USUARIO ||--o{ EXERCICIO : cria
-    USUARIO ||--o{ TREINO_LOG : registra
-    EXERCICIO ||--o{ TREINO_LOG : possui
-    
-    USUARIO {
-        bigint id PK
-        varchar nome
-        varchar email UK
-        varchar senha
-    }
-    
-    EXERCICIO {
-        bigint id PK
-        varchar nome
-        varchar grupo_muscular
-        bigint usuario_id FK
-    }
-    
-    TREINO_LOG {
-        bigint id PK
-        date data_treino
-        integer series
-        integer repeticoes
-        float carga_kg
-        bigint exercicio_id FK
-    }
-```
-
----
-
 ## 📡 Endpoints da API
 
 | Método | Endpoint | Descrição |
@@ -180,5 +142,9 @@ ironpump-fullstack/
 **Caue Prado**
 
 [![GitHub](https://img.shields.io/badge/GitHub-100000?style=for-the-badge&logo=github&logoColor=white)](https://github.com/CauePrad0)
+[![LinkedIn](https://img.shields.io/badge/LinkedIn-0077B5?style=for-the-badge&logo=linkedin&logoColor=white)](www.linkedin.com/in/cauê-prado-baía-369583302)
+
+)
+
 
 </div>
