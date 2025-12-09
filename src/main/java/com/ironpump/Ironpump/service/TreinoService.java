@@ -31,15 +31,12 @@ public class TreinoService {
     public ProgressoDTO registrarTreino(TreinoLogDTO dto){
         TreinoLog treinoLog = converterParaEntity(dto);
 
-        var treinoAnteriorOpt = treinoLogRepository
-                .findFirstByUsuarioIdAndExercicioIdAndDataBeforeOrderByDataDesc(
+        TreinoLog treinoAnterior = treinoLogRepository
+                .findFirstByUsuarioIdAndExercicioIdOrderByDataDesc(
                         dto.getUsuarioId(),
-                        dto.getExercicioId(),
-                        dto.getData()
+                        dto.getExercicioId()
                 );
         TreinoLog treinoSalvo = treinoLogRepository.save(treinoLog);
-
-        TreinoLog treinoAnterior = treinoAnteriorOpt.orElse(null);
 
         return converterParaProgressoDTO(treinoSalvo, treinoAnterior);
     }
@@ -133,5 +130,22 @@ public class TreinoService {
         long dias = ChronoUnit.DAYS.between(dataAnterior, dataAtual);
 
         return (int) dias;
+    }
+
+    public java.util.List<ProgressoDTO> listarHistorico(Long usuarioId, Long exercicioId) {
+        java.util.List<TreinoLog> logs = treinoLogRepository
+                .findByUsuarioIdAndExercicioIdOrderByDataDesc(usuarioId, exercicioId);
+
+        return logs.stream().map(log -> ProgressoDTO.builder()
+                .id(log.getId())
+                .exercicioNome(log.getExercicio().getNome())
+                .grupoMuscular(log.getExercicio().getGrupoMuscular())
+                .data(log.getData())
+                .series(log.getSeries())
+                .repeticoes(log.getRepeticoes())
+                .cargaKg(log.getCargaKg())
+                .observacoes(log.getObservacoes())
+                .build()
+        ).collect(java.util.stream.Collectors.toList());
     }
 }

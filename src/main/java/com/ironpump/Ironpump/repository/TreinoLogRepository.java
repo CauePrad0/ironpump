@@ -11,7 +11,8 @@ import java.util.Optional;
 @Repository
 public interface TreinoLogRepository extends JpaRepository<TreinoLog, Long> {
 
-    List<TreinoLog> findByUsuarioIdOrderByDataDesc(Long usuarioId);
+
+    TreinoLog findFirstByUsuarioIdAndExercicioIdOrderByDataDesc(Long usuarioId, Long exercicioId);
 
     List<TreinoLog> findByUsuarioIdAndExercicioIdOrderByDataDesc(Long usuarioId, Long exercicioId);
 

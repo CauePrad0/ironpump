@@ -28,6 +28,10 @@ public class Exercicio {
     @Column(length = 500)
     private String observacoes;
 
+    @ManyToOne
+    @JoinColumn(name = "usuario_id")
+    private Usuario usuario;
+
     @OneToMany(mappedBy = "exercicio", cascade = CascadeType.ALL)
     @JsonIgnore
     private List<TreinoLog> treinos = new ArrayList<>();

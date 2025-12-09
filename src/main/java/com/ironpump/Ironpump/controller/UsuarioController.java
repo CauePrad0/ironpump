@@ -7,6 +7,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.Map;
 
 @RestController
 @RequestMapping("/api/usuarios")
@@ -24,8 +25,20 @@ public class UsuarioController {
         return repository.save(usuario);
     }
 
+    @PostMapping("/login")
+    public Usuario login(@RequestBody Map<String, String> credenciais) {
+        String email = credenciais.get("email");
+        String senha = credenciais.get("senha");
+
+        return repository.findByEmail(email)
+                .filter(u -> u.getSenha().equals(senha)) // Validação simples de senha
+                .orElseThrow(() -> new RuntimeException("Email ou senha inválidos"));
+    }
+
+
     @GetMapping
     public List<Usuario> listar(){
+
         return repository.findAll();
     }
 }
