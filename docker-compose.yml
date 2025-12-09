@@ -18,6 +18,50 @@ services:
       interval: 10s
       timeout: 5s
       retries: 5
+    networks:
+      - ironpump-network
+
+  # Backend Spring Boot
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: ironpump-backend
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/ironpump
+      SPRING_DATASOURCE_USERNAME: ironpump_user
+      SPRING_DATASOURCE_PASSWORD: iron_secret_2024
+      SPRING_JPA_HIBERNATE_DDL_AUTO: update
+      SPRING_JPA_SHOW_SQL: "true"
+      SERVER_PORT: 8080
+    ports:
+      - "8080:8080"
+    extra_hosts:
+      - "host.docker.internal:host-gateway"  
+    depends_on:
+      postgres:
+        condition: service_healthy
+    restart: unless-stopped
+    networks:
+      - ironpump-network
+
+
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    container_name: ironpump-frontend
+    ports:
+      - "3000:80"  
+    depends_on:
+      - backend
+    restart: unless-stopped
+    networks:
+      - ironpump-network
 
 volumes:
   postgres_data:
+
+networks:
+  ironpump-network:
+    driver: bridge

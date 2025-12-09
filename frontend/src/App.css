@@ -1,0 +1,333 @@
+/* App.css - Identity: Ironpump Industrial Tech */
+:root {
+  --bg-core: #121214;       /* Fundo principal quase preto */
+  --bg-panel: #202024;      /* Fundo dos cards/paineis */
+  --bg-input: #121214;      /* Fundo de inputs */
+
+  --brand-primary: #ff8c00; /* Laranja Industrial (Ação) */
+  --brand-hover: #e07b00;
+
+  --text-primary: #e1e1e6;  /* Branco Gelo */
+  --text-secondary: #a8a8b3; /* Cinza Metálico */
+
+  --border-subtle: #323238; /* Bordas discretas */
+  --border-focus: #ff8c00;  /* Foco */
+
+  --success: #04d361;       /* Verde Tech */
+  --danger: #f75a68;        /* Vermelho Alerta */
+  --neutral: #e1e1e6;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  padding: 0;
+  background-color: var(--bg-core);
+  color: var(--text-primary);
+  font-family: 'Inter', 'Segoe UI', Roboto, sans-serif; /* Fonte limpa */
+  -webkit-font-smoothing: antialiased;
+}
+
+/* --- Layout Principal --- */
+.layout-container {
+  display: flex;
+  flex-direction: column;
+  height: 100vh; /* Ocupa toda a tela */
+  max-width: 1600px;
+  margin: 0 auto;
+  padding: 0 40px;
+}
+
+/* --- Header --- */
+.top-bar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 30px 0;
+  border-bottom: 1px solid var(--border-subtle);
+  margin-bottom: 40px;
+}
+
+.logo-section h1 {
+  font-size: 1.8rem;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 2px;
+  margin: 0;
+  color: var(--text-primary);
+}
+
+.logo-section span {
+  color: var(--brand-primary);
+}
+
+.subtitle {
+  font-size: 0.8rem;
+  color: var(--text-secondary);
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  margin-top: 5px;
+}
+
+.user-nav {
+  display: flex;
+  gap: 20px;
+  align-items: center;
+}
+
+/* --- Buttons & Inputs --- */
+button {
+  cursor: pointer;
+  border: none;
+  font-family: inherit;
+  transition: all 0.2s;
+}
+
+.btn-primary {
+  background: var(--brand-primary);
+  color: #fff;
+  font-weight: 700;
+  padding: 12px 24px;
+  border-radius: 4px; /* Cantos levemente arredondados, mas quadrados */
+  text-transform: uppercase;
+  font-size: 0.85rem;
+  letter-spacing: 1px;
+}
+
+.btn-primary:hover {
+  background: var(--brand-hover);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(255, 140, 0, 0.2);
+}
+
+.btn-ghost {
+  background: transparent;
+  border: 1px solid var(--border-subtle);
+  color: var(--text-secondary);
+  padding: 10px 20px;
+  border-radius: 4px;
+  font-weight: 600;
+}
+
+.btn-ghost:hover {
+  border-color: var(--text-primary);
+  color: var(--text-primary);
+}
+
+.input-tech {
+  background: var(--bg-input);
+  border: 1px solid var(--border-subtle);
+  color: var(--text-primary);
+  padding: 12px;
+  border-radius: 4px;
+  font-size: 1rem;
+  width: 100%;
+  transition: border-color 0.2s;
+}
+
+.input-tech:focus {
+  outline: none;
+  border-color: var(--brand-primary);
+}
+
+/* --- Grid de Exercícios --- */
+.dashboard-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+  gap: 24px;
+  padding-bottom: 40px;
+}
+
+.exercise-card {
+  background: var(--bg-panel);
+  border: 1px solid var(--border-subtle);
+  border-radius: 8px;
+  padding: 24px;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  min-height: 220px;
+  position: relative;
+  overflow: hidden;
+  transition: transform 0.2s, border-color 0.2s;
+}
+
+.exercise-card:hover {
+  transform: translateY(-4px);
+  border-color: var(--brand-primary);
+}
+
+/* Faixa lateral decorativa */
+.exercise-card::after {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 0;
+  bottom: 0;
+  width: 4px;
+  background: var(--brand-primary);
+  opacity: 0;
+  transition: opacity 0.2s;
+}
+
+.exercise-card:hover::after {
+  opacity: 1;
+}
+
+.card-header h3 {
+  margin: 0;
+  font-size: 1.4rem;
+  font-weight: 600;
+  margin-bottom: 8px;
+}
+
+.tag {
+  display: inline-block;
+  font-size: 0.7rem;
+  background: var(--border-subtle);
+  padding: 4px 8px;
+  border-radius: 4px;
+  text-transform: uppercase;
+  color: var(--text-secondary);
+  font-weight: bold;
+}
+
+.card-actions {
+  display: flex;
+  gap: 10px;
+  margin-top: 20px;
+}
+
+.card-actions button {
+  flex: 1;
+}
+
+/* --- Modals (Glassmorphism Dark) --- */
+.overlay {
+  position: fixed;
+  top: 0; left: 0; right: 0; bottom: 0;
+  background: rgba(0, 0, 0, 0.7);
+  backdrop-filter: blur(4px);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+  animation: fadeIn 0.2s ease-out;
+}
+
+.modal-panel {
+  background: var(--bg-panel);
+  padding: 40px;
+  width: 500px;
+  max-width: 90%;
+  border-radius: 8px;
+  border: 1px solid var(--border-subtle);
+  box-shadow: 0 20px 50px rgba(0,0,0,0.5);
+  animation: slideUp 0.3s ease-out;
+}
+
+.modal-title {
+  font-size: 1.5rem;
+  margin: 0 0 30px 0;
+  padding-bottom: 15px;
+  border-bottom: 1px solid var(--border-subtle);
+  color: var(--text-primary);
+}
+
+.form-group {
+  margin-bottom: 20px;
+}
+
+.form-group label {
+  display: block;
+  font-size: 0.85rem;
+  color: var(--text-secondary);
+  margin-bottom: 8px;
+  text-transform: uppercase;
+}
+
+.form-row {
+  display: flex;
+  gap: 20px;
+}
+
+/* --- Result Display (O Feedback de Progresso) --- */
+.result-box {
+  text-align: center;
+  padding: 30px;
+  background: var(--bg-core);
+  border: 2px solid var(--border-subtle);
+  border-radius: 8px;
+}
+
+.status-text {
+  font-size: 2rem;
+  font-weight: 900;
+  text-transform: uppercase;
+  letter-spacing: 3px;
+  margin: 10px 0 30px 0;
+}
+
+.metric-container {
+  display: flex;
+  justify-content: space-around;
+  margin-top: 20px;
+}
+
+.metric-label {
+  display: block;
+  font-size: 0.75rem;
+  color: var(--text-secondary);
+  text-transform: uppercase;
+  margin-bottom: 5px;
+}
+
+.metric-value {
+  font-size: 1.8rem;
+  font-family: 'Courier New', monospace; /* Fonte técnica para números */
+  font-weight: bold;
+}
+
+/* Cores de Estado */
+.evoluiu { color: var(--success); border-color: var(--success); }
+.regrediu { color: var(--danger); border-color: var(--danger); }
+.manteve { color: var(--neutral); border-color: var(--neutral); }
+
+/* --- Lista de Histórico --- */
+.history-list {
+  max-height: 400px;
+  overflow-y: auto;
+  border-top: 1px solid var(--border-subtle);
+}
+
+.history-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 15px 0;
+  border-bottom: 1px solid var(--border-subtle);
+}
+
+.history-date {
+  color: var(--text-secondary);
+  font-size: 0.9rem;
+}
+
+.history-data {
+  font-family: 'Courier New', monospace;
+  font-weight: bold;
+  font-size: 1.1rem;
+}
+
+/* Animations */
+@keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+@keyframes slideUp { from { transform: translateY(20px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+
+/* Scrollbar Customizada */
+::-webkit-scrollbar { width: 8px; }
+::-webkit-scrollbar-track { background: var(--bg-core); }
+::-webkit-scrollbar-thumb { background: var(--border-subtle); border-radius: 4px; }
+::-webkit-scrollbar-thumb:hover { background: var(--brand-primary); }
