@@ -27,7 +27,7 @@ interface ProgressoDTO {
   diferencaCarga?: number;
 }
 
-// --- FUNÇÃO AUXILIAR DE CORES (NOVO) ---
+// --- FUNÇÃO AUXILIAR DE CORES ---
 const getCorGrupo = (grupo: string) => {
   const g = grupo ? grupo.toLowerCase() : '';
   // Retorna [corTexto, corFundo]
@@ -41,24 +41,50 @@ const getCorGrupo = (grupo: string) => {
   return ['#7f8c8d', '#f2f3f4']; // Cinza (Padrão)
 };
 
+// --- FUNÇÃO AUXILIAR DE FORMATAÇÃO DE DATA ---
+const formatarData = (dataISO: string): string => {
+  if (!dataISO) return '';
+
+  // Se já estiver no formato DD/MM/AAAA, retorna direto
+  if (dataISO.includes('/')) return dataISO;
+
+  // Tenta criar um objeto Date e formatar
+  try {
+    const data = new Date(dataISO + 'T00:00:00'); // Adiciona horário para evitar timezone
+    const dia = String(data.getDate()).padStart(2, '0');
+    const mes = String(data.getMonth() + 1).padStart(2, '0');
+    const ano = data.getFullYear();
+    return `${dia}/${mes}/${ano}`;
+  } catch (e) {
+    // Fallback: tenta split manual
+    const partes = dataISO.split('-');
+    if (partes.length === 3) {
+      const [ano, mes, dia] = partes;
+      return `${dia.padStart(2, '0')}/${mes.padStart(2, '0')}/${ano}`;
+    }
+    return dataISO;
+  }
+};
+
 function App() {
   // --- Estado de Autenticação ---
   const [usuarioLogado, setUsuarioLogado] = useState<Usuario | null>(null);
   const [authMode, setAuthMode] = useState<'LOGIN' | 'REGISTER'>('LOGIN');
-  
+
   const [authEmail, setAuthEmail] = useState('');
   const [authSenha, setAuthSenha] = useState('');
   const [authNome, setAuthNome] = useState('');
 
   // --- Estado do Dashboard ---
   const [exercicios, setExercicios] = useState<Exercicio[]>([]);
+  const [ultimosTreinos, setUltimosTreinos] = useState<Record<number, ProgressoDTO>>({});
   const [filtroAtivo, setFiltroAtivo] = useState('Todos');
   const [loading, setLoading] = useState(false);
   const [view, setView] = useState<'DASHBOARD' | 'CRIAR_EXERCICIO' | 'REGISTRAR_TREINO' | 'HISTORICO'>('DASHBOARD');
-  
+
   const [exercicioSelecionado, setExercicioSelecionado] = useState<Exercicio | null>(null);
-  
-  const [carga, setCarga] = useState(''); 
+
+  const [carga, setCarga] = useState('');
   const [series, setSeries] = useState('3');
   const [reps, setReps] = useState('10');
   const [feedbackTreino, setFeedbackTreino] = useState<ProgressoDTO | null>(null);
@@ -66,11 +92,11 @@ function App() {
   // Novo Exercício
   const [novoNome, setNovoNome] = useState('');
   const [novoGrupo, setNovoGrupo] = useState('');
-  const [novaObservacao, setNovaObservacao] = useState(''); 
+  const [novaObservacao, setNovaObservacao] = useState('');
 
   const [historicoDados, setHistoricoDados] = useState<ProgressoDTO[]>([]);
 
-  // --- PERSISTÊNCIA DE LOGIN (NOVO) ---
+  // --- PERSISTÊNCIA DE LOGIN ---
   useEffect(() => {
     // Ao carregar a página, verifica se tem usuário salvo
     const usuarioSalvo = localStorage.getItem('ironpump_user');
@@ -90,13 +116,13 @@ function App() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ email: authEmail, senha: authSenha })
       });
-      
+
       if (res.ok) {
         const user = await res.json();
-        
-        // SALVAR NO LOCALSTORAGE (NOVO)
+
+        // SALVAR NO LOCALSTORAGE
         localStorage.setItem('ironpump_user', JSON.stringify(user));
-        
+
         setUsuarioLogado(user);
         carregarExercicios(user.id);
       } else {
@@ -119,8 +145,8 @@ function App() {
 
       if (res.ok) {
         const user = await res.json();
-        
-        // SALVAR NO LOCALSTORAGE (NOVO)
+
+        // SALVAR NO LOCALSTORAGE
         localStorage.setItem('ironpump_user', JSON.stringify(user));
 
         setUsuarioLogado(user);
@@ -134,9 +160,9 @@ function App() {
   };
 
   const handleLogout = () => {
-    // LIMPAR LOCALSTORAGE (NOVO)
+    // LIMPAR LOCALSTORAGE
     localStorage.removeItem('ironpump_user');
-    
+
     setUsuarioLogado(null);
     setExercicios([]);
     setAuthEmail('');
@@ -151,6 +177,24 @@ function App() {
       if(res.ok){
         const data = await res.json();
         setExercicios(data);
+
+        // Carregar último treino de cada exercício
+        data.forEach(async (ex: Exercicio) => {
+          try {
+            const resHistorico = await fetch(`/api/treinos/historico?usuarioId=${userId}&exercicioId=${ex.id}`);
+            if (resHistorico.ok) {
+              const historico = await resHistorico.json();
+              if (historico.length > 0) {
+                setUltimosTreinos(prev => ({
+                  ...prev,
+                  [ex.id]: historico[0]
+                }));
+              }
+            }
+          } catch (error) {
+            console.error(`Erro ao carregar histórico do exercício ${ex.id}`, error);
+          }
+        });
       }
     } catch (error) { console.error("Erro API", error); }
   };
@@ -174,7 +218,7 @@ function App() {
     if (!exercicioSelecionado || !usuarioLogado) return;
 
     const cargaFormatada = parseFloat(carga.replace(',', '.'));
-    
+
     if(isNaN(cargaFormatada)) {
         alert("Por favor insira um peso válido.");
         return;
@@ -202,6 +246,13 @@ function App() {
       if (res.ok) {
         const resultado = await res.json();
         setFeedbackTreino(resultado);
+        // Atualizar o último treino no estado
+        if (exercicioSelecionado) {
+          setUltimosTreinos(prev => ({
+            ...prev,
+            [exercicioSelecionado.id]: resultado
+          }));
+        }
       } else {
         alert("Erro ao salvar treino.");
       }
@@ -216,17 +267,17 @@ function App() {
       const res = await fetch('/api/exercicios', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ 
-            nome: novoNome, 
+        body: JSON.stringify({
+            nome: novoNome,
             grupoMuscular: novoGrupo,
             observacoes: novaObservacao,
-            usuarioId: usuarioLogado.id 
+            usuarioId: usuarioLogado.id
         })
       });
       if (res.ok) {
         carregarExercicios(usuarioLogado.id);
         fecharModais();
-        setNovoNome(''); 
+        setNovoNome('');
         setNovoGrupo('');
         setNovaObservacao('');
       } else {
@@ -278,7 +329,7 @@ function App() {
                   value={authNome} onChange={e => setAuthNome(e.target.value)} />
               </div>
             )}
-            
+
             <div className="form-group">
               <label>Email</label>
               <input className="input-tech" type="email" required placeholder="email@exemplo.com"
@@ -297,7 +348,7 @@ function App() {
           </form>
 
           <div style={{textAlign: 'center', marginTop: '20px'}}>
-            <button className="btn-ghost" style={{fontSize: '0.8rem', border: 'none'}} 
+            <button className="btn-ghost" style={{fontSize: '0.8rem', border: 'none'}}
               onClick={() => setAuthMode(authMode === 'LOGIN' ? 'REGISTER' : 'LOGIN')}>
               {authMode === 'LOGIN' ? 'Criar conta nova' : 'Já possuo conta'}
             </button>
@@ -331,10 +382,10 @@ function App() {
       </header>
 
       {/* --- BARRA DE FILTROS --- */}
-      <div style={{ 
-          padding: '20px 40px 0 40px', 
-          display: 'flex', 
-          gap: '20px', 
+      <div style={{
+          padding: '20px 40px 0 40px',
+          display: 'flex',
+          gap: '20px',
           borderBottom: '1px solid rgba(255,255,255,0.1)'
       }}>
         {categorias.map(cat => (
@@ -374,19 +425,17 @@ function App() {
             )}
           </div>
         ) : (
-          /* USANDO A LISTA FILTRADA E AS CORES */
           exerciciosFiltrados.map(ex => {
-            // Pega as cores baseadas no grupo
             const [corTexto, corFundo] = getCorGrupo(ex.grupoMuscular);
-            
+            const ultimoTreino = ultimosTreinos[ex.id];
+
             return (
               <div key={ex.id} className="exercise-card">
                 <div>
-                  {/* TAG COLORIDA AQUI */}
-                  <span 
-                    className="tag" 
-                    style={{ 
-                        backgroundColor: corFundo, 
+                  <span
+                    className="tag"
+                    style={{
+                        backgroundColor: corFundo,
                         color: corTexto,
                         padding: '4px 10px',
                         borderRadius: '12px'
@@ -394,13 +443,49 @@ function App() {
                   >
                     {ex.grupoMuscular || 'Geral'}
                   </span>
-                  
+
                   <div className="card-header" style={{marginTop: '15px'}}>
                     <h3>{ex.nome}</h3>
                   </div>
-                  <p style={{color: '#888', fontSize: '0.9rem', whiteSpace: 'pre-wrap'}}>
-                    {ex.observacoes || "Sem observações."}
-                  </p>
+
+                  {/* PESO ATUAL EM DESTAQUE */}
+                  {ultimoTreino ? (
+                    <div style={{
+                      margin: '15px 0',
+                      padding: '12px',
+                      background: 'var(--bg-core)',
+                      borderRadius: '6px',
+                      border: '2px solid var(--brand-primary)'
+                    }}>
+                      <div style={{
+                        fontSize: '0.7rem',
+                        color: 'var(--text-secondary)',
+                        textTransform: 'uppercase',
+                        marginBottom: '5px'
+                      }}>
+                        Peso Atual
+                      </div>
+                      <div style={{
+                        fontSize: '2rem',
+                        fontWeight: 'bold',
+                        color: 'var(--brand-primary)',
+                        fontFamily: "'Courier New', monospace"
+                      }}>
+                        {ultimoTreino.cargaKg} <span style={{fontSize: '1rem'}}>KG</span>
+                      </div>
+                      <div style={{
+                        fontSize: '0.75rem',
+                        color: 'var(--text-secondary)',
+                        marginTop: '5px'
+                      }}>
+                        {ultimoTreino.series}×{ultimoTreino.repeticoes} • {formatarData(ultimoTreino.data)}
+                      </div>
+                    </div>
+                  ) : (
+                    <p style={{color: '#888', fontSize: '0.9rem', whiteSpace: 'pre-wrap', marginTop: '15px'}}>
+                      {ex.observacoes || "Sem treinos registrados ainda."}
+                    </p>
+                  )}
                 </div>
                 <div className="card-actions">
                   <button className="btn-ghost" onClick={() => carregarHistorico(ex)}>DADOS</button>
@@ -420,7 +505,7 @@ function App() {
               <div className={`result-box ${feedbackTreino.evoluiu ? 'evoluiu' : feedbackTreino.regrediu ? 'regrediu' : 'manteve'}`}>
                 <h4 style={{margin:0, opacity: 0.7}}>RESULTADO</h4>
                 <div className="status-text">
-                  {feedbackTreino.evoluiu ? "Evolução Confirmada" : 
+                  {feedbackTreino.evoluiu ? "Evolução Confirmada" :
                    feedbackTreino.regrediu ? "Redução de Carga" : "Carga Mantida"}
                 </div>
                 <div className="metric-container">
@@ -470,25 +555,89 @@ function App() {
       {/* MODAL HISTORICO */}
       {view === 'HISTORICO' && exercicioSelecionado && (
         <div className="overlay" onClick={(e) => e.target === e.currentTarget && fecharModais()}>
-          <div className="modal-panel">
+          <div className="modal-panel" style={{maxWidth: '600px'}}>
             <h2 className="modal-title">Histórico: {exercicioSelecionado.nome}</h2>
+
             {loading ? <p>Carregando...</p> : (
-              <div className="history-list">
-                {historicoDados.length === 0 ? <p style={{textAlign:'center', padding:'20px'}}>Sem registros.</p> : (
-                  historicoDados.map(log => (
-                    <div key={log.id} className="history-item">
-                      <div>
-                        <div className="history-data">{log.cargaKg} kg</div>
-                        <div className="history-date">{log.data}</div>
-                      </div>
-                      <div style={{textAlign: 'right'}}>
-                        <div style={{fontSize: '0.9rem', color: '#fff'}}>{log.series} x {log.repeticoes}</div>
-                        <div className="tag">Séries</div>
-                      </div>
+              <>
+                {/* CARD DE PESO ATUAL - DESTAQUE */}
+                {historicoDados.length > 0 && (
+                  <div style={{
+                    background: 'linear-gradient(135deg, var(--brand-primary), #e07b00)',
+                    padding: '25px',
+                    borderRadius: '8px',
+                    marginBottom: '25px',
+                    textAlign: 'center',
+                    boxShadow: '0 4px 15px rgba(255, 140, 0, 0.3)'
+                  }}>
+                    <div style={{
+                      fontSize: '0.75rem',
+                      color: 'rgba(255,255,255,0.8)',
+                      textTransform: 'uppercase',
+                      letterSpacing: '1px',
+                      marginBottom: '8px'
+                    }}>
+                      Peso Atual
                     </div>
-                  ))
+                    <div style={{
+                      fontSize: '3rem',
+                      fontWeight: 'bold',
+                      color: '#fff',
+                      fontFamily: "'Courier New', monospace",
+                      marginBottom: '5px'
+                    }}>
+                      {historicoDados[0].cargaKg} <span style={{fontSize: '1.5rem'}}>KG</span>
+                    </div>
+                    <div style={{
+                      fontSize: '0.85rem',
+                      color: 'rgba(255,255,255,0.9)'
+                    }}>
+                      {historicoDados[0].series} séries × {historicoDados[0].repeticoes} repetições
+                    </div>
+                    <div style={{
+                      fontSize: '0.75rem',
+                      color: 'rgba(255,255,255,0.7)',
+                      marginTop: '8px'
+                    }}>
+                      Último treino: {formatarData(historicoDados[0].data)}
+                    </div>
+                  </div>
                 )}
-              </div>
+
+                {/* LISTA DE HISTÓRICO */}
+                <div className="history-list">
+                  {historicoDados.length === 0 ? (
+                    <p style={{textAlign:'center', padding:'20px'}}>Sem registros.</p>
+                  ) : (
+                    <>
+                      <div style={{
+                        fontSize: '0.8rem',
+                        color: 'var(--text-secondary)',
+                        textTransform: 'uppercase',
+                        marginBottom: '15px',
+                        paddingBottom: '10px',
+                        borderBottom: '1px solid var(--border-subtle)'
+                      }}>
+                        Histórico Completo
+                      </div>
+                      {historicoDados.map((log, index) => (
+                        <div key={log.id} className="history-item" style={{
+                          opacity: index === 0 ? 1 : 0.7
+                        }}>
+                          <div>
+                            <div className="history-data">{log.cargaKg} kg</div>
+                            <div className="history-date">{formatarData(log.data)}</div>
+                          </div>
+                          <div style={{textAlign: 'right'}}>
+                            <div style={{fontSize: '0.9rem', color: '#fff'}}>{log.series} × {log.repeticoes}</div>
+                            <div className="tag">Séries</div>
+                          </div>
+                        </div>
+                      ))}
+                    </>
+                  )}
+                </div>
+              </>
             )}
             <button className="btn-ghost" style={{marginTop: '20px', width: '100%'}} onClick={fecharModais}>FECHAR</button>
           </div>
