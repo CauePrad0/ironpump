@@ -56,7 +56,6 @@ const formatarData = (dataISO: string): string => {
     const ano = data.getFullYear();
     return `${dia}/${mes}/${ano}`;
   } catch (e) {
-    // Fallback: tenta split manual
     const partes = dataISO.split('-');
     if (partes.length === 3) {
       const [ano, mes, dia] = partes;
@@ -364,7 +363,7 @@ function App() {
       <header className="top-bar">
         <div className="logo-section">
           <h1>Iron<span>Pump</span></h1>
-          <div className="subtitle">Training OS v1.0</div>
+          <div className="subtitle">Training OS</div>
         </div>
 
         <div className="user-nav">
