@@ -1,7 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import './App.css';
 
-// --- Interfaces ---
 interface Exercicio {
   id: number;
   nome: string;
@@ -27,10 +26,9 @@ interface ProgressoDTO {
   diferencaCarga?: number;
 }
 
-// --- FUNÇÃO AUXILIAR DE CORES ---
+// --- CORES ---
 const getCorGrupo = (grupo: string) => {
   const g = grupo ? grupo.toLowerCase() : '';
-  // Retorna [corTexto, corFundo]
   if (g.includes('peito')) return ['#e74c3c', '#fadbd8'];     // Vermelho
   if (g.includes('costas')) return ['#2980b9', '#d6eaf8'];    // Azul
   if (g.includes('pernas')) return ['#d35400', '#edbb99'];    // Laranja/Terra
@@ -41,14 +39,12 @@ const getCorGrupo = (grupo: string) => {
   return ['#7f8c8d', '#f2f3f4']; // Cinza (Padrão)
 };
 
-// --- FUNÇÃO AUXILIAR DE FORMATAÇÃO DE DATA ---
 const formatarData = (dataISO: string): string => {
   if (!dataISO) return '';
 
-  // Se já estiver no formato DD/MM/AAAA, retorna direto
+  // retorna direto
   if (dataISO.includes('/')) return dataISO;
 
-  // Tenta criar um objeto Date e formatar
   try {
     const data = new Date(dataISO + 'T00:00:00'); // Adiciona horário para evitar timezone
     const dia = String(data.getDate()).padStart(2, '0');
@@ -66,7 +62,6 @@ const formatarData = (dataISO: string): string => {
 };
 
 function App() {
-  // --- Estado de Autenticação ---
   const [usuarioLogado, setUsuarioLogado] = useState<Usuario | null>(null);
   const [authMode, setAuthMode] = useState<'LOGIN' | 'REGISTER'>('LOGIN');
 
@@ -74,7 +69,6 @@ function App() {
   const [authSenha, setAuthSenha] = useState('');
   const [authNome, setAuthNome] = useState('');
 
-  // --- Estado do Dashboard ---
   const [exercicios, setExercicios] = useState<Exercicio[]>([]);
   const [ultimosTreinos, setUltimosTreinos] = useState<Record<number, ProgressoDTO>>({});
   const [filtroAtivo, setFiltroAtivo] = useState('Todos');
@@ -88,14 +82,14 @@ function App() {
   const [reps, setReps] = useState('10');
   const [feedbackTreino, setFeedbackTreino] = useState<ProgressoDTO | null>(null);
 
-  // Novo Exercício
+  // novo exercicio
   const [novoNome, setNovoNome] = useState('');
   const [novoGrupo, setNovoGrupo] = useState('');
   const [novaObservacao, setNovaObservacao] = useState('');
 
   const [historicoDados, setHistoricoDados] = useState<ProgressoDTO[]>([]);
 
-  // --- PERSISTÊNCIA DE LOGIN ---
+  // pro login ficar salvo ainda dando F5
   useEffect(() => {
     // Ao carregar a página, verifica se tem usuário salvo
     const usuarioSalvo = localStorage.getItem('ironpump_user');
@@ -106,7 +100,6 @@ function App() {
     }
   }, []);
 
-  // --- Funções de Autenticação ---
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
@@ -119,7 +112,6 @@ function App() {
       if (res.ok) {
         const user = await res.json();
 
-        // SALVAR NO LOCALSTORAGE
         localStorage.setItem('ironpump_user', JSON.stringify(user));
 
         setUsuarioLogado(user);
@@ -145,7 +137,6 @@ function App() {
       if (res.ok) {
         const user = await res.json();
 
-        // SALVAR NO LOCALSTORAGE
         localStorage.setItem('ironpump_user', JSON.stringify(user));
 
         setUsuarioLogado(user);
@@ -159,7 +150,6 @@ function App() {
   };
 
   const handleLogout = () => {
-    // LIMPAR LOCALSTORAGE
     localStorage.removeItem('ironpump_user');
 
     setUsuarioLogado(null);
@@ -169,7 +159,6 @@ function App() {
     setView('DASHBOARD');
   };
 
-  // --- Funções do Sistema ---
   const carregarExercicios = async (userId: number) => {
     try {
       const res = await fetch(`/api/exercicios?usuarioId=${userId}`);
@@ -177,7 +166,6 @@ function App() {
         const data = await res.json();
         setExercicios(data);
 
-        // Carregar último treino de cada exercício
         data.forEach(async (ex: Exercicio) => {
           try {
             const resHistorico = await fetch(`/api/treinos/historico?usuarioId=${userId}&exercicioId=${ex.id}`);
@@ -245,7 +233,6 @@ function App() {
       if (res.ok) {
         const resultado = await res.json();
         setFeedbackTreino(resultado);
-        // Atualizar o último treino no estado
         if (exercicioSelecionado) {
           setUltimosTreinos(prev => ({
             ...prev,
@@ -298,7 +285,6 @@ function App() {
     setFeedbackTreino(null);
   };
 
-  // --- LÓGICA DE FILTRAGEM ---
   const categorias = ['Todos', 'Peito', 'Costas', 'Pernas', 'Ombros', 'Bíceps', 'Tríceps', 'Abdômen'];
 
   const exerciciosFiltrados = filtroAtivo === 'Todos'
@@ -306,9 +292,8 @@ function App() {
     : exercicios.filter(ex => ex.grupoMuscular === filtroAtivo);
 
 
-  // --- RENDERIZAÇÃO ---
 
-  // 1. LOGIN
+  //  LOGIN
   if (!usuarioLogado) {
     return (
       <div className="layout-container" style={{justifyContent: 'center', alignItems: 'center'}}>
@@ -357,13 +342,12 @@ function App() {
     );
   }
 
-  // 2. DASHBOARD
   return (
     <div className="layout-container">
       <header className="top-bar">
         <div className="logo-section">
           <h1>Iron<span>Pump</span></h1>
-          <div className="subtitle">Training OS</div>
+          <div className="subtitle">Training OS </div>
         </div>
 
         <div className="user-nav">
@@ -380,7 +364,6 @@ function App() {
         </div>
       </header>
 
-      {/* --- BARRA DE FILTROS --- */}
       <div style={{
           padding: '20px 40px 0 40px',
           display: 'flex',
@@ -496,7 +479,6 @@ function App() {
         )}
       </main>
 
-      {/* MODAL TREINAR */}
       {view === 'REGISTRAR_TREINO' && exercicioSelecionado && (
         <div className="overlay" onClick={(e) => e.target === e.currentTarget && fecharModais()}>
           <div className="modal-panel">
@@ -551,7 +533,6 @@ function App() {
         </div>
       )}
 
-      {/* MODAL HISTORICO */}
       {view === 'HISTORICO' && exercicioSelecionado && (
         <div className="overlay" onClick={(e) => e.target === e.currentTarget && fecharModais()}>
           <div className="modal-panel" style={{maxWidth: '600px'}}>
@@ -559,7 +540,6 @@ function App() {
 
             {loading ? <p>Carregando...</p> : (
               <>
-                {/* CARD DE PESO ATUAL - DESTAQUE */}
                 {historicoDados.length > 0 && (
                   <div style={{
                     background: 'linear-gradient(135deg, var(--brand-primary), #e07b00)',
@@ -603,7 +583,6 @@ function App() {
                   </div>
                 )}
 
-                {/* LISTA DE HISTÓRICO */}
                 <div className="history-list">
                   {historicoDados.length === 0 ? (
                     <p style={{textAlign:'center', padding:'20px'}}>Sem registros.</p>
@@ -643,7 +622,6 @@ function App() {
         </div>
       )}
 
-      {/* MODAL NOVO EXERCICIO */}
       {view === 'CRIAR_EXERCICIO' && (
         <div className="overlay" onClick={(e) => e.target === e.currentTarget && fecharModais()}>
           <div className="modal-panel">
